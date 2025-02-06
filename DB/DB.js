@@ -12,5 +12,5 @@ const ConnectDB=async()=>{
         if(error) throw new Error(error.message)
         
     }
-}
+}   
 module.exports={ConnectDB}

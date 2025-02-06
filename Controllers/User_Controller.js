@@ -4,7 +4,9 @@ const jwt = require('jsonwebtoken');
 const { cloudinary } = require('../Config/Cloudinary')
 const path=require('path');
 const { console } = require('inspector');
+const { OAuth2Client } = require("google-auth-library");
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
 const generateTokens = (user) => {
     const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -15,6 +17,7 @@ const generateTokens = (user) => {
 const SignUp = async (req, res) => { 
     try {
         console.log(req.file)
+        
 
         const { name, email, password } = req.body;
 
@@ -52,7 +55,7 @@ const SignUp = async (req, res) => {
 };
 
 
-const Login = async (req, res) => {
+const Login = async (req, res) => { 
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email: email });
@@ -70,16 +73,16 @@ const Login = async (req, res) => {
         // Generate tokens 
         const { accessToken } = generateTokens(user);
         res.cookie('token', accessToken, {
-            httpOnly: true,  // Security measure, to prevent client-side JavaScript access
-            maxAge: 60 * 60 * 1000,  // Cookie expiration time (1 hour here)
+            httpOnly: true, // Security measure, prevents client-side access to the cookie
+            maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
         });
+        
         const userData = await User.findById(user._id).select('-password'); // Find the logged-in user and exclude the password
-        const allUsers = await User.find({ _id: { $ne: userData._id } }).select('-password'); // Find all users except the logged-in user and exclude their passwords
         
         // You can now return or use both `userData` and `allUsers`
         
 
-        res.status(200).json({ message: 'Login Successfully' ,userData,allUsers, token: accessToken});
+        res.status(200).json({ message: 'Login Successfully' ,userData, token: accessToken});
     } catch (error) {
         console.log('Login failed', error);
         res.status(500).json({ message: 'Login failed' });
@@ -101,10 +104,60 @@ const Logout = async (req, res) => {
     }
 }
 
+const getAllUsers = async (req, res) => {
+    try {
+        const { userId } = req.params;
 
+        if (!userId) {
+            return res.status(401).send({ message: 'Unauthorized Access' });
+        }
+
+        const allUsers = await User.find({ _id: { $ne: userId } }).select('-password'); // Find all users except the logged-in user and exclude their passwords
+        res.status(200).json(allUsers);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send({ message: 'Server Error' });
+    }
+};
+
+const googleAuth = async (req, res) => {
+    try {
+      const { token } = req.body;
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+  
+      const { sub, name, email, picture } = ticket.getPayload();
+  
+      console.log('User name from Google login:', name); // Log the name
+  
+      let user = await User.findOne({ email: email });
+      if (!user) {
+        user = new User({
+          password: sub,
+          name,
+          email,
+          image: picture,
+        });
+        await user.save();
+      }
+  
+      const jwtToken = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  
+      
+  
+      res.status(200).json({ token: jwtToken, user });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send({ message: 'Server Error' });
+    }
+  };
 
 module.exports = {
     SignUp,
     Login,
-    Logout
+    Logout,
+    getAllUsers,
+    googleAuth
 }

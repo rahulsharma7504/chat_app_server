@@ -4,7 +4,7 @@ const userSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     image: { type: String, required: true },
-    is_online: { type: Boolean, default: false }
+    is_online: { type: String, default: false }
 
 })
 

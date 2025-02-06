@@ -22,5 +22,7 @@ userRoute.post('/signup',uploadSingal,User_Controller.SignUp)
 
 userRoute.post('/user/login',User_Controller.Login)
 userRoute.post('/logout',Secure,User_Controller.Logout)
+userRoute.post('/all-users/:userId',User_Controller.getAllUsers)
+userRoute.post('/auth/google',User_Controller.googleAuth)
 
 module.exports = { userRoute }
