@@ -5,6 +5,7 @@ const { cloudinary } = require('../Config/Cloudinary')
 const path=require('path');
 const { console } = require('inspector');
 const { OAuth2Client } = require("google-auth-library");
+const ChatModel=require('../Models/ChatModel');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
@@ -154,10 +155,36 @@ const googleAuth = async (req, res) => {
     }
   };
 
+
+const fetchChats = async (req, res) => {
+    try {
+        const { userId1, userId2 } = req.query;
+
+        if (!userId1 || !userId2) {
+            return res.status(400).json({ message: 'Missing userId1 or userId2' });
+        }
+
+        console.log(`Fetching chats between userId1: ${userId1} and userId2: ${userId2}`);
+
+        const chats = await ChatModel.getChatsBetweenUsers(userId1, userId2);
+
+        if (!chats) {
+            return res.status(404).json({ message: 'No chats found' });
+        }
+
+        res.status(200).json(chats);
+    } catch (err) {
+        console.error('Error fetching chats:', err.message);
+        res.status(500).send({ message: 'Server Error' });
+    }
+};
+
+
 module.exports = {
     SignUp,
     Login,
     Logout,
     getAllUsers,
-    googleAuth
+    googleAuth,
+    fetchChats,
 }

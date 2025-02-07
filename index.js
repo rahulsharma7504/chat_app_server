@@ -44,7 +44,7 @@ getSocketConnetction(io);
 ConnectDB();
 
 // Routes
-app.use('/api', require('./Routes/User_Routes').userRoute);
+app.use('/api',require('./Routes/User_Routes').userRoute);
 
 // Start the server
 const PORT = process.env.PORT || 4000;

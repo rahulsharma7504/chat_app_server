@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         cb(null, Date.now() + '-' + file.originalname)
     }
-})
+}) 
 
 const upload = multer({ storage: storage })
 const uploadSingal = upload.single('image'); // 'images' is the field name, max 5 files
@@ -23,6 +23,7 @@ userRoute.post('/signup',uploadSingal,User_Controller.SignUp)
 userRoute.post('/user/login',User_Controller.Login)
 userRoute.post('/logout',Secure,User_Controller.Logout)
 userRoute.post('/all-users/:userId',User_Controller.getAllUsers)
+userRoute.get('/chat',User_Controller.fetchChats)
 userRoute.post('/auth/google',User_Controller.googleAuth)
 
 module.exports = { userRoute }

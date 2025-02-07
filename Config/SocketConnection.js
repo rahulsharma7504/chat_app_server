@@ -1,4 +1,5 @@
 const User = require('../Models/userModel');
+const ChatModel = require('../Models/ChatModel');
 
 const getSocketConnetction = async (io) => {
     try {
@@ -23,7 +24,21 @@ const getSocketConnetction = async (io) => {
                 }
             });
 
+                socket.on('sendMessage', async (message) => { 
+                try {
+                    
+                    const newMessage = new ChatModel({
+                        sender: message.senderId,
+                        receiver: message.receiverId,
+                        message: message.message
+                    });
+                    await newMessage.save();
+                    io.emit('message', newMessage);
+                } catch (error) {
+                    console.error('Error sending message:', error.message);
             
+                }
+            });
 
             socket.on('disconnect', () => {
                 console.log('Client disconnected');
