@@ -1,6 +1,6 @@
 const User = require('../Models/userModel');
 const ChatModel = require('../Models/ChatModel');
-
+const GroupMessage = require('../Models/GroupMessages');
 const getSocketConnetction = async (io) => {
     try {
         io.on('connection', (socket) => {
@@ -38,6 +38,13 @@ const getSocketConnetction = async (io) => {
                     console.error('Error sending message:', error.message);
             
                 }
+            });
+
+            socket.on('sendGroupMessage', async ({ senderId, groupId, message }) => {
+                // Handle group messages
+                const newGroupMessage = new GroupMessage({ senderId, groupId, message });
+                await newGroupMessage.save();
+                socket.emit('message', newGroupMessage);
             });
 
             socket.on('disconnect', () => {

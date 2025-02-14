@@ -6,6 +6,8 @@ const path=require('path');
 const { console } = require('inspector');
 const { OAuth2Client } = require("google-auth-library");
 const ChatModel=require('../Models/ChatModel');
+const GroupModel=require('../Models/GroupModel');
+const GroupMessage=require('../Models/GroupMessages');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
@@ -58,6 +60,7 @@ const SignUp = async (req, res) => {
 
 const Login = async (req, res) => { 
     try {
+        console.log(req.body)
         const { email, password } = req.body;
         const user = await User.findOne({ email: email });
         if (!user) {
@@ -75,15 +78,16 @@ const Login = async (req, res) => {
         const { accessToken } = generateTokens(user);
         res.cookie('token', accessToken, {
             httpOnly: true, // Security measure, prevents client-side access to the cookie
+            secure: true, // Requires https
             maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
         });
         
-        const userData = await User.findById(user._id).select('-password'); // Find the logged-in user and exclude the password
-        
-        // You can now return or use both `userData` and `allUsers`
+        const userData = await User.findById(user._id).select('-password');  // Find the logged-in user and exclude the password
+        const JoinedGroups = await GroupModel.find({ users: userData._id });
+        // You can now return or use both `userData` and `JoinedGroups` in your response
         
 
-        res.status(200).json({ message: 'Login Successfully' ,userData, token: accessToken});
+        res.status(200).json({ message: 'Login Successfully', userData, JoinedGroups, token: accessToken });
     } catch (error) {
         console.log('Login failed', error);
         res.status(500).json({ message: 'Login failed' });
@@ -114,7 +118,16 @@ const getAllUsers = async (req, res) => {
         }
 
         const allUsers = await User.find({ _id: { $ne: userId } }).select('-password'); // Find all users except the logged-in user and exclude their passwords
-        res.status(200).json(allUsers);
+
+        // Find User Groups by Id
+        const userGroups = await GroupModel.find({
+            $or: [
+                { users: userId },
+                { createdBy: userId }
+            ]
+        });
+
+        res.status(200).json({ allUsers, userGroups });
     } catch (error) {
         console.error(error.message);
         res.status(500).send({ message: 'Server Error' });
@@ -179,6 +192,45 @@ const fetchChats = async (req, res) => {
     }
 };
 
+const fetchGroupChats = async (req, res) => {
+    try {
+        const { groupId } = req.query;
+
+        if (!groupId) {
+            return res.status(400).json({ message: 'Missing groupId' });
+        }
+
+        console.log(`Fetching group chats for groupId: ${groupId}`);
+
+        const groupChats = await GroupMessage.find({ groupId });
+
+
+        if (groupChats.length === 0) {
+            return res.status(200).json({ message: 'No group chats found' });
+        }
+
+        res.status(200).json(groupChats);
+    } catch (err) {
+        console.error('Error fetching group chats:', err.message);
+        res.status(500).send({ message: 'Server Error' });
+    }
+};
+
+const userProfile = async (req, res) => {
+    try {
+        const { name, email, bio } = req.body;
+        const user = await User.findById(req.params.userId);
+        user.name = name;
+        user.email = email;
+        user.bio = bio;
+        await user.save();
+        res.status(200).json(user);
+    }
+    catch (error) {
+        console.error('Error updating profile:', error.message);
+        res.status(500).send({ message: 'Server Error' });
+    }
+}
 
 module.exports = {
     SignUp,
@@ -187,4 +239,6 @@ module.exports = {
     getAllUsers,
     googleAuth,
     fetchChats,
+    fetchGroupChats,
+    userProfile
 }

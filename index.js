@@ -33,7 +33,8 @@ const io = socketio(server, {
     cors: {
         origin: "http://localhost:3000",  // Frontend URL
         methods: ["GET", "POST"]
-    }
+    },
+    debug: true, // Logging ke liye
 });
 
 getSocketConnetction(io);
