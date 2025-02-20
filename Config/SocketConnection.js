@@ -47,6 +47,8 @@ const getSocketConnetction = async (io) => {
                 socket.emit('message', newGroupMessage);
             });
 
+           
+
             socket.on('disconnect', () => {
                 console.log('Client disconnected');
             });

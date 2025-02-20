@@ -52,6 +52,42 @@ userRoute.post('/create/:userId', upload.single('groupImage'), async (req, res) 
 
 })
 
+
 userRoute.put('/profile/:userId', User_Controller.userProfile)
+userRoute.delete('/group/leave', User_Controller.Leave_To_Group)
+userRoute.put('/group/add-users', User_Controller.addusersToGroup)
+// userRoute.delete('/group/leave', async(req,res)=>{
+//     try { 
+//         const { groupId, userId } = req.body;
+//         if (!groupId || !userId) {
+//             return res.status(400).json({ message: 'Missing groupId or userId' });
+//         }
+
+//         // Find the group by ID
+//         const group = await GroupModel.findById(groupId);
+
+//         if (!group) {
+//             return res.status(404).json({ message: 'Group not found' });
+//         }
+
+//         // Check if the user is part of the group
+//         const userIndex = group.users.indexOf(userId);
+//         if (userIndex === -1) {
+//             return res.status(400).json({ message: 'User is not a member of the group' });
+//         }
+
+//         // Remove the user from the group
+//         group.users.splice(userIndex, 1);
+
+//         // Save the updated group
+//         await group.save();
+
+//         res.status(200).json({ message: 'User has left the group successfully' });
+//     } catch (error) {
+//         console.error('Error leaving group:', error.message);
+//         res.status(500).send({ message: 'Server Error' });
+//     }
+// })
+
 
 module.exports = { userRoute }
