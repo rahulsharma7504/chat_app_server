@@ -1,11 +1,10 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+const  dotenv =require('dotenv').config();
+const  mongoose =require('mongoose');
 
-dotenv.config();
 
 const ConnectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI;
+    const uri = process.env.MONGO_URI || 'mongodb+srv://rahul658541:Rahul1234@cluster0.jyfnp.mongodb.net/';
     if (!uri) {
       throw new Error("MONGO_URI is not defined in environment variables.");
     }
@@ -22,4 +21,4 @@ const ConnectDB = async () => {
   }
 };
 
-export default ConnectDB;
+module.exports={ConnectDB};
