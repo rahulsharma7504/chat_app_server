@@ -273,7 +273,7 @@ const Leave_To_Group = async (req, res) => {
 
 const addusersToGroup = async (req, res) => {
     try {
-        const { groupId, newMembers, groupLimit } = req.body;
+        const { groupId, newMembers, groupLimit } = req.body; 
 
         if (!groupId || !newMembers || !Array.isArray(newMembers)) {
             return res.status(400).json({ message: 'Missing groupId or newMembers' });
