@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 const uploadSingal = upload.single('groupImage'); // 'images' is the field name, max 5 files
 
-userRoute.post('/signup', uploadSingal, User_Controller.SignUp)
+userRoute.post('/signup', upload.single('image'), User_Controller.SignUp)
 userRoute.get('/test', (req,res)=>{
     res.send("Node Working")
 })

@@ -18,7 +18,7 @@ app.use(cookieParser());
 const cors = require('cors');
 const { getSocketConnetction } = require('./Config/SocketConnection');
 app.use(cors({
-    origin: 'https://chatapp-rho-beryl.vercel.app',  // Your frontend URL
+    origin: 'http://localhost:3000',  // Your frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,  // Allow cookies to be sent with requests
 }));
@@ -31,7 +31,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO on the HTTP server
 const io = socketio(server, {
     cors: {
-        origin: "https://chatapp-rho-beryl.vercel.app",  // Frontend URL
+        origin: "http://localhost:3000",  // Frontend URL
         methods: ["GET", "POST"]
     },
     debug: true, // Logging ke liye
@@ -44,10 +44,7 @@ getSocketConnetction(io);
 // Connect to the database
 ConnectDB();
 
-// Routes
-app.use('/api',(req,res)=>{
-    res.send("API is working")
-});
+
 app.use('/api',require('./Routes/User_Routes').userRoute);
 
 // Start the server

@@ -19,10 +19,11 @@ const generateTokens = (user) => {
 // Register new user
 const SignUp = async (req, res) => {
     try {
-        console.log(req.file)
 
 
         const { name, email, password } = req.body;
+        console.log('Received data:', req.body); // Log the received data
+        console.log('Received file:', req.file); // Log the received file
 
         // Check if email already exists in the database
         const findUser = await User.findOne({ email: email });
