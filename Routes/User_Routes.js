@@ -57,6 +57,7 @@ userRoute.post('/create/:userId', upload.single('groupImage'), async (req, res) 
 
 
 userRoute.put('/profile/:userId', User_Controller.userProfile)
+userRoute.put('/avatar/:userId', upload.single('image'), User_Controller.updateUserAvatar)
 userRoute.delete('/group/leave', User_Controller.Leave_To_Group)
 userRoute.put('/group/add-users', User_Controller.addusersToGroup)
 // userRoute.delete('/group/leave', async(req,res)=>{

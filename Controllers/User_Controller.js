@@ -285,7 +285,8 @@ const addusersToGroup = async (req, res) => {
 
         if (!group) {
             return res.status(404).json({ message: 'Group not found' });
-        }
+        }cl
+
 
         // Update the group limit if provided
         if (groupLimit && groupLimit > group.userLimit) {
@@ -309,6 +310,39 @@ const addusersToGroup = async (req, res) => {
     }
 };
 
+const updateUserAvatar = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ message: 'No image uploaded' });
+        }
+
+        // Upload image to Cloudinary
+        const result = await cloudinary.uploader.upload(file.path);
+        const newImageUrl = result.secure_url;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.image = newImageUrl;
+        await user.save();
+
+        // Optionally, remove the old image from Cloudinary if you store public_id
+        // For simplicity, this step is omitted here.
+
+        const updatedUserData = await User.findById(userId).select('-password');
+
+        res.status(200).json({ message: 'Avatar updated successfully', user: updatedUserData });
+    } catch (error) {
+        console.error('Avatar update failed:', error);
+        res.status(500).json({ message: 'Avatar update failed' });
+    }
+};
+
 module.exports = {
     SignUp,
     Login,
@@ -319,5 +353,6 @@ module.exports = {
     fetchGroupChats,
     userProfile,
     Leave_To_Group,
-    addusersToGroup
+    addusersToGroup,
+    updateUserAvatar
 }
